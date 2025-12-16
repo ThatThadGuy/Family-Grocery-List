@@ -1,0 +1,534 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Family Grocery List</title>
+  <meta name="theme-color" content="#0b1220">
+  <style>
+    :root{
+      --bg0:#070b14;
+      --bg1:#0b1220;
+      --card:rgba(255,255,255,.06);
+      --stroke:rgba(255,255,255,.12);
+      --text:#e5e7eb;
+      --muted:#9ca3af;
+      --muted2:#94a3b8;
+      --good:#22c55e;
+      --warn:#f59e0b;
+      --bad:#ef4444;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background:
+        radial-gradient(1200px 700px at 15% 10%, rgba(34,197,94,.20), transparent 60%),
+        radial-gradient(900px 600px at 85% 10%, rgba(59,130,246,.18), transparent 55%),
+        radial-gradient(900px 600px at 50% 110%, rgba(236,72,153,.10), transparent 60%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+      color:var(--text);
+      min-height:100vh;
+    }
+    .wrap{max-width:980px; margin:0 auto; padding:22px 16px 70px;}
+    header{display:flex; align-items:flex-start; justify-content:space-between; gap:14px; flex-wrap:wrap;}
+    h1{margin:0; font-size:28px; letter-spacing:.2px;}
+    .sub{margin-top:6px; color:var(--muted); line-height:1.35; max-width:68ch;}
+    .card{
+      background:var(--card);
+      border:1px solid var(--stroke);
+      border-radius:18px;
+      padding:14px;
+      box-shadow:0 18px 46px rgba(0,0,0,.38);
+      backdrop-filter: blur(8px);
+    }
+    .rightCard{min-width:320px; flex: 0 0 auto;}
+    .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
+    input, select, button{
+      border-radius:12px;
+      padding:10px 12px;
+      border:1px solid rgba(255,255,255,.16);
+      background:rgba(0,0,0,.22);
+      color:var(--text);
+      outline:none;
+    }
+    input::placeholder{color:var(--muted)}
+    input:focus, select:focus{border-color: rgba(34,197,94,.55); box-shadow:0 0 0 3px rgba(34,197,94,.18)}
+    button{
+      cursor:pointer;
+      border:0;
+      font-weight:800;
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      transition: transform .08s ease, filter .15s ease;
+    }
+    button:hover{filter:brightness(1.05)}
+    button:active{transform: translateY(1px)}
+    button.secondary{
+      background: rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.16);
+      font-weight:700;
+    }
+    button.danger{background: linear-gradient(135deg, #ef4444, #b91c1c);}
+    .pill{
+      font-size:12px;
+      color:#cbd5e1;
+      background: rgba(255,255,255,.08);
+      padding: 4px 10px;
+      border-radius: 999px;
+      border:1px solid rgba(255,255,255,.10);
+      white-space:nowrap;
+    }
+    .divider{height:1px; background: rgba(255,255,255,.10); margin:12px 0;}
+    .grid{display:grid; grid-template-columns: 1fr; gap:14px; margin-top:14px;}
+    @media(min-width: 920px){ .grid{ grid-template-columns: 1.12fr .88fr; } }
+    .titleRow{display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;}
+    .titleRow h2{margin:0; font-size:16px;}
+    .muted{color:var(--muted); font-size:13px;}
+    .tiny{color:var(--muted2); font-size:12px;}
+    .tabs{display:flex; gap:8px; flex-wrap:wrap;}
+    .tab{
+      padding:7px 10px; border-radius:999px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.08);
+      cursor:pointer;
+      font-weight:800;
+      color:var(--text);
+      user-select:none;
+    }
+    .tab.active{outline: 3px solid rgba(34,197,94,.22); border-color: rgba(34,197,94,.35);}
+    .chips{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;}
+    .chip{
+      cursor:pointer;
+      padding:7px 10px;
+      border-radius:999px;
+      background: rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.12);
+      font-weight:800;
+      color:var(--text);
+    }
+    .chip:hover{filter:brightness(1.06)}
+    .list{margin:10px 0 0; padding:0; list-style:none;}
+    .storeGroup{margin-top:10px; border-top:1px solid rgba(255,255,255,.10); padding-top:10px;}
+    .storeHead{display:flex; justify-content:space-between; align-items:center; gap:10px;}
+    .storeName{font-weight:900;}
+    .storeCount{color:var(--muted); font-size:12px;}
+    .itemRow{
+      display:flex; justify-content:space-between; align-items:center; gap:10px;
+      padding:10px 0;
+      border-top: 1px solid rgba(255,255,255,.08);
+    }
+    .left{display:flex; align-items:center; gap:10px; min-width:0;}
+    .txt{display:flex; flex-direction:column; min-width:0;}
+    .main{
+      font-weight:900;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    .meta{
+      font-size:12px;
+      color:var(--muted);
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    .done .main{text-decoration: line-through; color:#94a3b8;}
+    .done .meta{color:#64748b;}
+    .cb{width:18px; height:18px;}
+    .toast{
+      position:fixed; left:50%; transform:translateX(-50%);
+      bottom:18px;
+      background: rgba(17,24,39,.92);
+      color:var(--text);
+      border:1px solid rgba(255,255,255,.14);
+      padding:10px 12px;
+      border-radius: 14px;
+      box-shadow: 0 14px 34px rgba(0,0,0,.45);
+      display:none;
+      max-width: 92vw;
+    }
+    .toast.show{display:block; animation: pop .18s ease;}
+    @keyframes pop{from{opacity:.2; transform:translateX(-50%) translateY(6px)} to{opacity:1; transform:translateX(-50%) translateY(0)}}
+    .kbd{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 12px; padding:2px 6px; border-radius:8px; background: rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.12);}
+    .warn{color:#fbbf24;}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Family Grocery List</h1>
+        <div class="sub">Live updates on both phones. Add items in seconds. Check them off at the store. Minimal drama, maximum groceries.</div>
+        <div class="muted" style="margin-top:10px;">
+          Pro tip: use a long List ID (the app can generate one) so it’s effectively unguessable.
+        </div>
+      </div>
+
+      <div class="card rightCard">
+        <div class="titleRow" style="margin-bottom:8px;">
+          <h2>Connect</h2>
+          <span class="pill" id="connPill">Not connected</span>
+        </div>
+
+        <div class="row">
+          <input id="listId" placeholder="List ID (tap Generate)" style="flex:1; min-width: 180px;">
+          <button class="secondary" id="genBtn" title="Generate a strong List ID">Generate</button>
+        </div>
+
+        <div class="row" style="margin-top:10px;">
+          <button class="secondary" id="connectBtn" style="flex:1;">Connect</button>
+          <button class="secondary" id="shareBtn" style="flex:1;">Copy Share Link</button>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="tiny">
+          Connected list: <span class="kbd" id="connectedId">none</span><br>
+          Status: <span id="statusText" class="warn">Not connected</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="grid">
+      <section class="card">
+        <div class="titleRow">
+          <h2>Add Item</h2>
+          <span class="pill" id="countPill">0 items</span>
+        </div>
+
+        <div class="row" style="margin-top:10px;">
+          <input id="item" placeholder="Item (e.g., eggs)" style="flex: 1; min-width: 240px;">
+          <input id="qty" placeholder="Qty (e.g., 2, 1 lb)" style="width: 180px;">
+        </div>
+
+        <div class="row" style="margin-top:10px;">
+          <input id="store" placeholder="Store (e.g., Costco, Fry’s)" style="flex: 1; min-width: 240px;">
+          <select id="forWho" style="width: 180px;">
+            <option>Both</option><option>Me</option><option>Dad</option>
+          </select>
+        </div>
+
+        <div class="row" style="margin-top:10px;">
+          <input id="notes" placeholder="Notes (brand, size, etc.)" style="flex: 1; min-width: 240px;">
+          <button id="addBtn" style="width: 180px;">Add</button>
+        </div>
+
+        <div class="chips" aria-label="Quick add">
+          <div class="chip" data-item="Milk">Milk</div>
+          <div class="chip" data-item="Eggs">Eggs</div>
+          <div class="chip" data-item="Bread">Bread</div>
+          <div class="chip" data-item="Chicken">Chicken</div>
+          <div class="chip" data-item="Rice">Rice</div>
+          <div class="chip" data-item="Coffee">Coffee</div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="titleRow">
+          <div class="tabs" role="tablist" aria-label="Filter">
+            <div class="tab active" data-filter="ALL">All</div>
+            <div class="tab" data-filter="NEEDED">Needed</div>
+            <div class="tab" data-filter="BOUGHT">Bought</div>
+          </div>
+          <div class="row">
+            <input id="search" placeholder="Search items…" style="width: 260px;">
+          </div>
+        </div>
+
+        <ul class="list" id="list"></ul>
+
+        <div class="muted" style="margin-top:10px;">
+          Keyboard: <span class="kbd">Enter</span> on Item field adds the item.
+        </div>
+      </section>
+
+      <aside class="card">
+        <div class="titleRow">
+          <h2>How this stays free</h2>
+        </div>
+        <div class="muted" style="margin-top:8px; line-height:1.5;">
+          Hosting is GitHub Pages (free). Data sync is Firebase Realtime Database (Spark plan is no-cost).
+          This app uses tiny reads/writes, so a family list stays comfortably inside free limits unless someone decides to stress-test it like a toddler on a light switch.
+        </div>
+        <div class="divider"></div>
+        <div class="titleRow">
+          <h2>Rules of the road</h2>
+        </div>
+        <div class="muted" style="margin-top:8px; line-height:1.5;">
+          No login (by design). Security is “unguessable link + limited validation rules.”
+          If you ever want real access control, the next upgrade is Firebase Auth (still free for your scale).
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <!-- Firebase v9 compat (CDN) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <script>
+    // 1) PASTE YOUR firebaseConfig BELOW (Firebase Console → Project settings → Your apps → Web app)
+    const firebaseConfig = {
+      apiKey: "PASTE_ME",
+      authDomain: "PASTE_ME",
+      databaseURL: "PASTE_ME",
+      projectId: "PASTE_ME",
+      storageBucket: "PASTE_ME",
+      messagingSenderId: "PASTE_ME",
+      appId: "PASTE_ME"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const el = {
+      listId: document.getElementById('listId'),
+      genBtn: document.getElementById('genBtn'),
+      connectBtn: document.getElementById('connectBtn'),
+      shareBtn: document.getElementById('shareBtn'),
+      connPill: document.getElementById('connPill'),
+      connectedId: document.getElementById('connectedId'),
+      statusText: document.getElementById('statusText'),
+      item: document.getElementById('item'),
+      qty: document.getElementById('qty'),
+      store: document.getElementById('store'),
+      forWho: document.getElementById('forWho'),
+      notes: document.getElementById('notes'),
+      addBtn: document.getElementById('addBtn'),
+      list: document.getElementById('list'),
+      countPill: document.getElementById('countPill'),
+      toast: document.getElementById('toast'),
+      tabs: Array.from(document.querySelectorAll('.tab')),
+      chips: Array.from(document.querySelectorAll('.chip')),
+      search: document.getElementById('search'),
+    };
+
+    let currentListId = null;
+    let ref = null;
+    let filter = 'ALL';
+    let searchTerm = '';
+
+    function toast(msg){
+      el.toast.textContent = msg;
+      el.toast.classList.add('show');
+      clearTimeout(toast._t);
+      toast._t = setTimeout(()=> el.toast.classList.remove('show'), 1300);
+    }
+
+    function getParam(name){ return new URLSearchParams(location.search).get(name); }
+    function setParam(listId){
+      history.replaceState({}, '', `${location.pathname}?list=${encodeURIComponent(listId)}`);
+    }
+
+    function randomId(len=22){
+      const chars = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789';
+      let out = '';
+      for(let i=0;i<len;i++) out += chars[Math.floor(Math.random()*chars.length)];
+      return out;
+    }
+
+    function setConnected(listId){
+      currentListId = listId;
+      el.connectedId.textContent = listId || 'none';
+      el.connPill.textContent = listId ? 'Connected (live)' : 'Not connected';
+      el.statusText.textContent = listId ? 'Live' : 'Not connected';
+      el.statusText.className = listId ? '' : 'warn';
+    }
+
+    function groupByStore(entries){
+      const groups = new Map();
+      for (const [id, v] of entries){
+        const store = (v.store || '').trim() || 'Unspecified';
+        if (!groups.has(store)) groups.set(store, []);
+        groups.get(store).push([id, v]);
+      }
+      // Sort groups by store name
+      return Array.from(groups.entries()).sort((a,b)=> a[0].localeCompare(b[0]));
+    }
+
+    function applyFilter(entries){
+      if (filter !== 'ALL') entries = entries.filter(([_,v]) => (v.status || 'NEEDED') === filter);
+      if (searchTerm){
+        const q = searchTerm.toLowerCase();
+        entries = entries.filter(([_,v]) => {
+          const hay = `${v.item||''} ${v.qty||''} ${v.store||''} ${v.forWho||''} ${v.notes||''}`.toLowerCase();
+          return hay.includes(q);
+        });
+      }
+      return entries;
+    }
+
+    function render(itemsObj){
+      let entries = Object.entries(itemsObj || {});
+      entries.sort((a,b)=> (b[1].createdAt||0) - (a[1].createdAt||0));
+
+      const filtered = applyFilter(entries);
+      el.countPill.textContent = `${filtered.length} item${filtered.length===1?'':'s'}`;
+
+      el.list.innerHTML = '';
+      const groups = groupByStore(filtered);
+
+      for (const [storeName, items] of groups){
+        const group = document.createElement('li');
+        group.className = 'storeGroup';
+
+        const head = document.createElement('div');
+        head.className = 'storeHead';
+
+        const left = document.createElement('div');
+        left.className = 'storeName';
+        left.textContent = storeName;
+
+        const right = document.createElement('div');
+        right.className = 'storeCount';
+        right.textContent = `${items.length} item${items.length===1?'':'s'}`;
+
+        head.appendChild(left);
+        head.appendChild(right);
+        group.appendChild(head);
+
+        for (const [id, v] of items){
+          const row = document.createElement('div');
+          row.className = 'itemRow' + ((v.status === 'BOUGHT') ? ' done' : '');
+
+          const l = document.createElement('div');
+          l.className = 'left';
+
+          const cb = document.createElement('input');
+          cb.className = 'cb';
+          cb.type = 'checkbox';
+          cb.checked = v.status === 'BOUGHT';
+          cb.addEventListener('change', ()=>{
+            if (!currentListId) return;
+            db.ref(`lists/${currentListId}/items/${id}/status`).set(cb.checked ? 'BOUGHT' : 'NEEDED');
+          });
+
+          const txt = document.createElement('div');
+          txt.className = 'txt';
+
+          const main = document.createElement('div');
+          main.className = 'main';
+          main.textContent = v.item || '';
+
+          const meta = document.createElement('div');
+          meta.className = 'meta';
+          const parts = [];
+          if (v.qty) parts.push(`Qty: ${v.qty}`);
+          if (v.forWho) parts.push(`For: ${v.forWho}`);
+          if (v.notes) parts.push(v.notes);
+          meta.textContent = parts.join(' • ') || '—';
+
+          txt.appendChild(main);
+          txt.appendChild(meta);
+
+          l.appendChild(cb);
+          l.appendChild(txt);
+
+          const del = document.createElement('button');
+          del.className = 'danger';
+          del.textContent = 'Delete';
+          del.addEventListener('click', ()=>{
+            if (!currentListId) return;
+            db.ref(`lists/${currentListId}/items/${id}`).remove();
+          });
+
+          row.appendChild(l);
+          row.appendChild(del);
+          group.appendChild(row);
+        }
+
+        el.list.appendChild(group);
+      }
+    }
+
+    function connect(listId){
+      if (!listId) { toast('Enter a List ID first'); return; }
+      if (ref) ref.off();
+
+      setConnected(listId);
+      setParam(listId);
+
+      ref = db.ref(`lists/${listId}/items`);
+      ref.on('value', snap => render(snap.val()));
+
+      toast('Connected');
+    }
+
+    function normalizeStore(s){
+      return (s||'').trim().replace(/\s+/g,' ');
+    }
+
+    function addItem(){
+      if (!currentListId) { toast('Connect to a list first'); return; }
+
+      const item = (el.item.value||'').trim();
+      if (!item) { toast('Item is required'); return; }
+
+      const payload = {
+        item: item.slice(0,80),
+        qty: (el.qty.value||'').trim().slice(0,40),
+        store: normalizeStore(el.store.value).slice(0,40),
+        forWho: el.forWho.value,
+        notes: (el.notes.value||'').trim().slice(0,140),
+        status: 'NEEDED',
+        createdAt: Date.now()
+      };
+
+      db.ref(`lists/${currentListId}/items`).push(payload);
+
+      el.item.value = '';
+      el.qty.value = '';
+      el.notes.value = '';
+      el.item.focus();
+      toast('Added');
+    }
+
+    // UI wiring
+    el.genBtn.addEventListener('click', ()=>{
+      el.listId.value = randomId(22);
+      toast('Generated a strong List ID');
+    });
+
+    el.connectBtn.addEventListener('click', ()=> connect(el.listId.value.trim()));
+
+    el.shareBtn.addEventListener('click', async ()=>{
+      if (!currentListId) return toast('Connect first');
+      const url = `${location.origin}${location.pathname}?list=${encodeURIComponent(currentListId)}`;
+      try{
+        await navigator.clipboard.writeText(url);
+        toast('Link copied');
+      }catch{
+        prompt('Copy this link:', url);
+      }
+    });
+
+    el.addBtn.addEventListener('click', addItem);
+    el.item.addEventListener('keydown', (e)=>{ if (e.key==='Enter') addItem(); });
+
+    el.tabs.forEach(t => t.addEventListener('click', ()=>{
+      el.tabs.forEach(x=>x.classList.remove('active'));
+      t.classList.add('active');
+      filter = t.dataset.filter;
+      // Re-render from current snapshot by forcing a read (cheap for small lists)
+      if (currentListId) db.ref(`lists/${currentListId}/items`).once('value').then(s=>render(s.val()));
+    }));
+
+    el.search.addEventListener('input', ()=>{
+      searchTerm = el.search.value.trim();
+      if (currentListId) db.ref(`lists/${currentListId}/items`).once('value').then(s=>render(s.val()));
+    });
+
+    el.chips.forEach(c => c.addEventListener('click', ()=>{
+      el.item.value = c.dataset.item || '';
+      el.item.focus();
+    }));
+
+    // Auto-connect from link
+    const initial = getParam('list');
+    if (initial){
+      el.listId.value = initial;
+      connect(initial);
+    } else {
+      setConnected(null);
+    }
+  </script>
+</body>
+</html>
